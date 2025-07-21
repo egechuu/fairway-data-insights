@@ -217,7 +217,7 @@
 
   /* Golf card styles */
   .card-golf {
-    @apply bg-card border border-border rounded-lg shadow-golf transition-golf hover:shadow-strong;
+    @apply bg-card border border-border rounded-lg shadow-golf transition-golf hover:shadow-xl;
   }
 
   .card-golf-premium {
