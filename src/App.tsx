@@ -6,6 +6,8 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "next-themes";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
+import { DashboardLayout } from "./components/dashboard/DashboardLayout";
+import { useAuth } from "./hooks/useAuth";
 
 // Session imports
 import { AvgSessionDuration } from "./pages/sessions/AvgSessionDuration";
@@ -29,6 +31,20 @@ import ComparisonAge from "./pages/users/ComparisonAge";
 
 const queryClient = new QueryClient();
 
+const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
+  const { isAuthenticated, logout } = useAuth();
+  
+  if (!isAuthenticated) {
+    return <Index />;
+  }
+  
+  return (
+    <DashboardLayout onLogout={logout}>
+      {children}
+    </DashboardLayout>
+  );
+};
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
@@ -40,24 +56,52 @@ const App = () => (
             <Route path="/" element={<Index />} />
             
             {/* Session Routes */}
-            <Route path="/sessions/avg_session_duration" element={<AvgSessionDuration />} />
-            <Route path="/sessions/avg_session_frequency" element={<AvgSessionFrequency />} />
-            <Route path="/sessions/daily_session" element={<DailySession />} />
-            <Route path="/sessions/weekly_session" element={<WeeklySession />} />
+            <Route path="/sessions/avg_session_duration" element={
+              <ProtectedRoute><AvgSessionDuration /></ProtectedRoute>
+            } />
+            <Route path="/sessions/avg_session_frequency" element={
+              <ProtectedRoute><AvgSessionFrequency /></ProtectedRoute>
+            } />
+            <Route path="/sessions/daily_session" element={
+              <ProtectedRoute><DailySession /></ProtectedRoute>
+            } />
+            <Route path="/sessions/weekly_session" element={
+              <ProtectedRoute><WeeklySession /></ProtectedRoute>
+            } />
             
             {/* Shot Routes */}
-            <Route path="/shots/most_used_clubs" element={<MostUsedClubs />} />
-            <Route path="/shots/total_shots" element={<TotalShots />} />
-            <Route path="/shots/club_performance" element={<ClubPerformance />} />
-            <Route path="/shots/premium_user_performance" element={<PremiumUserPerformance />} />
+            <Route path="/shots/most_used_clubs" element={
+              <ProtectedRoute><MostUsedClubs /></ProtectedRoute>
+            } />
+            <Route path="/shots/total_shots" element={
+              <ProtectedRoute><TotalShots /></ProtectedRoute>
+            } />
+            <Route path="/shots/club_performance" element={
+              <ProtectedRoute><ClubPerformance /></ProtectedRoute>
+            } />
+            <Route path="/shots/premium_user_performance" element={
+              <ProtectedRoute><PremiumUserPerformance /></ProtectedRoute>
+            } />
             
             {/* User Routes */}
-            <Route path="/users/subscribed_percentage" element={<SubscribedPercentage />} />
-            <Route path="/users/drop_off_rate_all" element={<DropOffRateAll />} />
-            <Route path="/users/drop_off_rate_sub" element={<DropOffRateSub />} />
-            <Route path="/users/comparison_country" element={<ComparisonCountry />} />
-            <Route path="/users/comparison_gender" element={<ComparisonGender />} />
-            <Route path="/users/comparison_age" element={<ComparisonAge />} />
+            <Route path="/users/subscribed_percentage" element={
+              <ProtectedRoute><SubscribedPercentage /></ProtectedRoute>
+            } />
+            <Route path="/users/drop_off_rate_all" element={
+              <ProtectedRoute><DropOffRateAll /></ProtectedRoute>
+            } />
+            <Route path="/users/drop_off_rate_sub" element={
+              <ProtectedRoute><DropOffRateSub /></ProtectedRoute>
+            } />
+            <Route path="/users/comparison_country" element={
+              <ProtectedRoute><ComparisonCountry /></ProtectedRoute>
+            } />
+            <Route path="/users/comparison_gender" element={
+              <ProtectedRoute><ComparisonGender /></ProtectedRoute>
+            } />
+            <Route path="/users/comparison_age" element={
+              <ProtectedRoute><ComparisonAge /></ProtectedRoute>
+            } />
             
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
