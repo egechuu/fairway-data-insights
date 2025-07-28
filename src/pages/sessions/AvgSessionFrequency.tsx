@@ -2,7 +2,16 @@ import { MetricCard } from "@/components/charts/MetricCard";
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts';
 import { useEffect, useState } from "react";
 
-const COLORS = ['#22c55e', '#16a34a', '#4ade80', '#bbf7d0'];
+const COLORS = [
+	'#3b82f6',                  // blue-500
+	'#8b5cf6',                  // violet-500
+	'#ef4444',                  // red-500
+	'#f97316',                  // orange-500
+	'#06b6d4',                  // cyan-500
+	'#ec4899',                  // pink-500
+	'#6366f1',                  // indigo-500
+	'#84cc16'
+];
 
 export default function AvgSessionFrequency() {
 	const [data, setData] = useState<Array<{ subscription: string; frequency: number }>>([]);
@@ -22,11 +31,11 @@ export default function AvgSessionFrequency() {
 				if (!res.ok) throw new Error('Failed to fetch metrics');
 				const json = await res.json();
 				const formatted = Array.isArray(json)
-  ? json.map(item => ({
-      subscription: item.subscription,
-      frequency: Number(item.frequency)
-    }))
-  : [];
+					? json.map(item => ({
+						subscription: item.subscription,
+						frequency: Number(item.frequency)
+					}))
+					: [];
 				setData(formatted);
 			} catch (err) {
 				// Optionally handle error
@@ -42,7 +51,7 @@ export default function AvgSessionFrequency() {
 			<div className="flex flex-col gap-2">
 				<h1 className="text-2xl font-bold text-foreground">Average Session Frequency</h1>
 				<p className="text-muted-foreground">Comparing session frequency across subscription status</p>
-			</div>  
+			</div>
 
 			<MetricCard
 				title="Session Frequency by Subscription"

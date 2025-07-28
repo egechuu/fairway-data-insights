@@ -1,13 +1,25 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
 
-const COLORS = ['#22c55e', '#f59e0b', '#3b82f6', '#8b5cf6', '#ef4444', '#f97316', '#10b981', '#e11d48', '#6366f1', '#0ea5e9'];
+// Updated colors to work better with dark mode
+const COLORS = [
+  'hsl(var(--primary))',      // Deep forest green
+  'hsl(var(--accent))',       // Warm gold  
+  '#3b82f6',                  // blue-500
+  '#8b5cf6',                  // violet-500
+  '#ef4444',                  // red-500
+  '#f97316',                  // orange-500
+  '#06b6d4',                  // cyan-500
+  '#ec4899',                  // pink-500
+  '#6366f1',                  // indigo-500
+  '#84cc16'                   // lime-500
+];
 
 const MetricCard = ({ title, description, className, children }) => (
-  <div className={`bg-white border rounded-lg shadow-sm ${className}`}>
+  <div className={`card-golf ${className}`}>
     <div className="p-6 pb-2">
-      <h3 className="text-lg font-semibold">{title}</h3>
-      <p className="text-sm text-gray-600">{description}</p>
+      <h3 className="text-lg font-semibold text-foreground">{title}</h3>
+      <p className="text-sm text-muted-foreground">{description}</p>
     </div>
     <div className="p-6 pt-0">
       {children}
@@ -93,16 +105,16 @@ export default function ComparisonGender() {
   return (
     <div className="space-y-6 p-6 max-w-6xl mx-auto">
       <div className="flex flex-col gap-2">
-        <h1 className="text-2xl font-bold text-gray-900">Gender-wise Subscription Comparison</h1>
-        <p className="text-gray-600">Subscription rates across different countries</p>
+        <h1 className="text-2xl font-bold text-foreground">Gender-wise Subscription Comparison</h1>
+        <p className="text-muted-foreground">Subscription rates by gender</p>
       </div>
 
       {loading && (
-        <div className="text-center text-gray-500">Loading...</div>
+        <div className="text-center text-muted-foreground">Loading...</div>
       )}
 
       {error && (
-        <div className="p-4 bg-red-50 border border-red-200 rounded text-red-600">
+        <div className="p-4 bg-destructive/10 border border-destructive/20 rounded text-destructive">
           Error: {error}
         </div>
       )}
@@ -119,7 +131,7 @@ export default function ComparisonGender() {
 
       {metrics.length > 0 && (
         <MetricCard
-          title="Top 10 Countries by User Distribution"
+          title="Gender Distribution"
           description="Total subscribed users per gender"
           className="min-h-[500px]"
         >
@@ -154,20 +166,20 @@ export default function ComparisonGender() {
       )}
 
       {metrics.length > 0 && (
-        <div className="bg-gray-50 rounded-lg p-6">
-          <h3 className="text-lg font-semibold mb-4">Summary Statistics</h3>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="card-golf p-6">
+          <h3 className="text-lg font-semibold mb-4 text-foreground">Summary Statistics</h3>
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
             <div className="text-center">
-              <div className="text-2xl font-bold text-green-600">{totalUsers}</div>
-              <div className="text-sm text-gray-600">Total Subscribed Users</div>
+              <div className="text-2xl font-bold text-golf-green">{totalUsers}</div>
+              <div className="text-sm text-muted-foreground">Total Subscribed Users</div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold text-purple-600">{avgRate}%</div>
-              <div className="text-sm text-gray-600">Average Subscription Rate</div>
+              <div className="text-2xl font-bold text-secondary">{avgRate}%</div>
+              <div className="text-sm text-muted-foreground">Average Subscription Rate</div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold text-orange-600">{maxRate}%</div>
-              <div className="text-sm text-gray-600">Highest Subscription Rate</div>
+              <div className="text-2xl font-bold text-accent">{maxRate}%</div>
+              <div className="text-sm text-muted-foreground">Highest Subscription Rate</div>
             </div>
           </div>
         </div>

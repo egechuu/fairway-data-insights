@@ -117,7 +117,7 @@ const Index = () => {
             </Card>
           </Link>
 
-          <Link to="/shots/most_used_clubs">
+          <Link to="/shots/premium_user_performance">
             <Card className="card-golf hover:shadow-glow transition-golf cursor-pointer group">
               <CardHeader>
                 <CardTitle className="flex items-center justify-between">

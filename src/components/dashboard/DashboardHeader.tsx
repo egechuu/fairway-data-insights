@@ -59,15 +59,13 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({ onLogout }) =>
           </Button>
 
           {/* Notifications */}
-          <DropdownMenu>
+          {/* <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="sm" className="relative transition-golf">
                 <Bell className="h-5 w-5" />
-                <Badge 
-                  className="absolute -top-1 -right-1 h-5 w-5 rounded-full p-0 text-xs bg-accent text-accent-foreground"
-                >
-                   3
-                </Badge>
+                <Badge
+                  className="absolute -top-1 -right-2 h-5 w-5 rounded-full p-0 text-xs bg-accent text-accent-foreground"
+                >3</Badge>
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-80">
@@ -89,7 +87,7 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({ onLogout }) =>
                 </div>
               </div>
             </DropdownMenuContent>
-          </DropdownMenu>
+          </DropdownMenu> */}
 
           {/* User menu */}
           <DropdownMenu>
@@ -122,7 +120,7 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({ onLogout }) =>
                 <span>Settings</span>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem 
+              <DropdownMenuItem
                 className="cursor-pointer text-destructive focus:text-destructive"
                 onClick={onLogout}
               >

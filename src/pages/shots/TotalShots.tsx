@@ -38,9 +38,9 @@ export default function TotalShots() {
       const thisMonthCount = parseInt(data.this_month_count || '0');
       const growth = parseFloat(data.growth || '0');
 
-      const transformedData = shotsData.map((item: any) => ({
+      const transformedData = shotsData.map((item) => ({
         total_shots: thisMonthCount,
-        month: item.month.trim().charAt(0).toUpperCase() + item.month.slice(1).toLowerCase(),
+        month: (item.month.charAt(0).toUpperCase() + item.month.slice(1).toLowerCase()).trim(),
         shots: parseInt(item.total_shot_count || '0'),
         growth: growth,
       }));

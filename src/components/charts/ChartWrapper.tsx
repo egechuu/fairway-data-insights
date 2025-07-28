@@ -200,7 +200,7 @@ export const PieChartWrapper: React.FC<Omit<ChartWrapperProps, 'chartConfig'> & 
       chartConfig={{
         type: 'pie',
         dataKey,
-        colors: ['hsl(var(--golf-green))', 'hsl(var(--destructive))', 'hsl(var(--golf-gold))'],
+        colors: ['hsl(var(--destructive))', 'hsl(var(--golf-green))', 'hsl(var(--golf-gold))'],
         responsive: true,
         showLegend: true,
         showTooltip: true,

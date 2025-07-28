@@ -69,11 +69,11 @@ const navigationItems = [
     title: 'Shots',
     icon: Target,
     items: [
-      {
-        title: 'Most Used Clubs',
-        url: '/shots/most_used_clubs',
-        icon: Trophy,
-      },
+      // {
+      //   title: 'Most Used Clubs',
+      //   url: '/shots/most_used_clubs',
+      //   icon: Trophy,
+      // },
       {
         title: 'Total Shots',
         url: '/shots/total_shots',

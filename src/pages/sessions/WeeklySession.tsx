@@ -15,13 +15,13 @@ const chartConfig = {
   tooltipProps: {
     formatter: (value: any, name: string) => {
       if (name === 'sessions') return [`${value} sessions`, 'Session Count'];
-      if (name === 'averageDuration') return [`${value} min`, 'Average Duration'];
+      if (name === 'secondary') return [`${value} min`, 'Average Duration'];
       return [value, name];
     },
   },
   series: [
     { type: 'bar', dataKey: 'sessions', name: 'Session Count', color: 'hsl(var(--secondary))' },
-    { type: 'line', dataKey: 'averageDuration', name: 'Average Duration', color: 'hsl(var(--accent))' },
+    { type: 'line', dataKey: 'secondary', name: 'Average Duration', color: 'hsl(var(--accent))' },
   ],
 };
 
@@ -38,7 +38,7 @@ const apiConfig = {
     week: item.week,
     sessions: item.sessions,
     averageDuration: item.avgDuration,
-    secondary: item.avgDuration,
+    secondary: item.avgDuration, // Keep this for the chart
   })),
 };
 
@@ -49,7 +49,6 @@ export default function WeeklySession() {
     { title: 'Avg Duration', value: '-', color: 'text-accent'},
   ]);
 
-
   const handleDataUpdate = useCallback((data: any[]) => {
     console.log('Weekly session data updated:', data);
     if (!data || data.length === 0) return;
@@ -58,6 +57,7 @@ export default function WeeklySession() {
     const avgDuration = (
       data.reduce((sum, item) => sum + (Number(item.averageDuration) || 0), 0) / data.length
     ).toFixed(1);
+
     const peakWeek = data.reduce((prev, curr) =>
       (curr.sessions || 0) > (prev.sessions || 0) ? curr : prev
     );
@@ -78,7 +78,7 @@ export default function WeeklySession() {
         color: 'text-accent'
       },
     ]);
-  }, []); 
+  }, []);
 
   return (
     <ChartWrapper

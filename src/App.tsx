@@ -70,9 +70,9 @@ const App = () => (
             } />
             
             {/* Shot Routes */}
-            <Route path="/shots/most_used_clubs" element={
+            {/* <Route path="/shots/most_used_clubs" element={
               <ProtectedRoute><MostUsedClubs /></ProtectedRoute>
-            } />
+            } /> */}
             <Route path="/shots/total_shots" element={
               <ProtectedRoute><TotalShots /></ProtectedRoute>
             } />

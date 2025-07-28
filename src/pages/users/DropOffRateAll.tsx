@@ -1,6 +1,4 @@
 import { PieChartWrapper } from '@/components/charts/ChartWrapper';
-import { chartApiService } from '@/services/chartApi';
-import { parse } from 'path';
 import { useState, useCallback, useRef } from 'react';
 
 export default function DropOffRateAll() {

@@ -152,23 +152,7 @@ export const AvgSessionDuration = () => {
         </CardContent>
       </Card>
 
-      {/* Chart placeholder */}
-      <Card className="card-golf">
-        <CardHeader>
-          <CardTitle>Session Duration Trends</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="h-64 bg-muted rounded-lg flex items-center justify-center">
-            <div className="text-center">
-              <Clock className="h-12 w-12 text-muted-foreground mx-auto mb-2" />
-              <p className="text-muted-foreground">Chart visualization will be implemented here</p>
-              <p className="text-sm text-muted-foreground mt-1">
-                Show duration trends over time with user type breakdown
-              </p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+      
     </div>
   );
 };
