@@ -1,19 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
 
-// Updated colors to work better with dark mode
-const COLORS = [
- 'hsl(var(--primary))',      // Deep forest green
-  'hsl(var(--accent))',       // Warm gold  
-  '#3b82f6',                  // blue-500
-  '#8b5cf6',                  // violet-500
-  '#ef4444',                  // red-500
-  '#f97316',                  // orange-500
-  '#06b6d4',                  // cyan-500
-  '#ec4899',                  // pink-500
-  '#6366f1',                  // indigo-500
-  '#84cc16'                   // lime-500
-];
+const COLORS = ['#22c55e', '#f59e0b', '#3b82f6', '#8b5cf6', '#ef4444', '#f97316', '#10b981', '#e11d48', '#6366f1', '#0ea5e9'];
 
 const MetricCard = ({ title, description, className, children }) => (
   <div className={`card-golf ${className}`}>
