@@ -9,6 +9,8 @@ import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
 import golfHero from '@/assets/golf-hero.jpg';
+import { useAuth } from '@/hooks/useAuth';
+import { useNavigate } from "react-router-dom";
 
 const loginSchema = z.object({
   email: z.string().email('Please enter a valid email address'),
@@ -23,6 +25,7 @@ interface LoginPageProps {
 }
 
 export const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
+  const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
@@ -38,17 +41,23 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
   });
 
   const rememberMe = watch('rememberMe');
+  const { login } = useAuth();
+
 
   const onSubmit = async (data: LoginForm) => {
     setIsLoading(true);
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      onLogin(data);
-      toast({
-        title: "Welcome back!",
-        description: "You've successfully logged into Golf Analytics.",
-      });
+      const result = await login(data.email, data.password, data.rememberMe);
+
+      if (result.success) {
+        toast({
+          title: "Welcome back!",
+          description: "You've successfully logged into Golf Analytics.",
+        });
+        window.location.reload(); // Refresh the page after successful login
+      } else {
+        throw new Error(result.error || 'Login failed');
+      }
     } catch (error) {
       toast({
         title: "Login failed",
@@ -59,6 +68,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
       setIsLoading(false);
     }
   };
+
 
   return (
     <div className="min-h-screen flex">

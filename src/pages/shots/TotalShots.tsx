@@ -1,49 +1,106 @@
 import { BarChartWrapper } from '@/components/charts/ChartWrapper';
+import { useState, useEffect } from 'react';
 
-// Example: API configuration for real data
-const apiConfig = {
-  endpoint: '/api/analytics/shots/monthly',
-  method: 'GET' as const,
-  refreshInterval: 60000, // 1 minute
-  retryAttempts: 3,
-  retryDelay: 2000,
-  transformData: (data: any[]) => data.map(item => ({
-    month: new Date(item.date).toLocaleDateString('en-US', { month: 'short' }),
-    shots: item.total_shots,
-    growth: item.growth_percentage,
-  })),
-};
+interface ShotData {
+  total_shots: number;
+  month: string;
+  shots: number;
+  growth: number;
+}
 
-// Fallback data for offline/development mode
-const fallbackData = [
-  { month: 'Jan', shots: 12450, growth: 8.5 },
-  { month: 'Feb', shots: 15230, growth: 22.3 },
-  { month: 'Mar', shots: 18940, growth: 24.4 },
-  { month: 'Apr', shots: 21560, growth: 13.8 },
-  { month: 'May', shots: 25180, growth: 16.8 },
-  { month: 'Jun', shots: 28920, growth: 14.9 },
-];
-
-const metrics = [
-  {
-    title: 'Total Shots',
-    value: '122,280',
-    change: { value: 15.2, period: 'this quarter' },
-  },
-  {
-    title: 'This Month',
-    value: '28,920',
-    color: 'text-secondary',
-    change: { value: 14.9, period: 'vs last month' },
-  },
-  {
-    title: 'Average Growth',
-    value: '+16.8%',
-    color: 'text-accent',
-  },
-];
+interface ApiResponse {
+  shots_per_months?: any[];
+  shots_per_month?: any[];
+  this_month_count?: string;
+  growth?: string;
+}
 
 export default function TotalShots() {
+  const [metricsData, setMetricsData] = useState({
+    totalShots: 0,
+    thisMonth: 0,
+    averageGrowth: 0
+  });
+
+  const token = localStorage.getItem('golf_auth_token');
+
+  const apiConfig = {
+    endpoint: '/api/shots/total_shots',
+    method: 'GET' as const,
+    refreshInterval: 0,
+    headers: {
+      'Authorization': token ? `Bearer ${token}` : '',
+      'Content-Type': 'application/json',
+    },
+    transformData: (data: ApiResponse) => {
+      // Handle the actual API response structure
+      const shotsData = data.shots_per_months || data.shots_per_month || [];
+      const thisMonthCount = parseInt(data.this_month_count || '0');
+      const growth = parseFloat(data.growth || '0');
+
+      const transformedData = shotsData.map((item: any) => ({
+        total_shots: thisMonthCount,
+        month: item.month.trim().charAt(0).toUpperCase() + item.month.slice(1).toLowerCase(),
+        shots: parseInt(item.total_shot_count || '0'),
+        growth: growth,
+      }));
+
+      // Sort months in chronological order
+      const monthOrder = [
+        'January', 'February', 'March', 'April', 'May', 'June',
+        'July', 'August', 'September', 'October', 'November', 'December'
+      ];
+
+      const sortedData = transformedData.sort((a, b) => {
+        return monthOrder.indexOf(a.month) - monthOrder.indexOf(b.month);
+      });
+
+      // Calculate total shots from all months
+      const totalShots = sortedData.reduce((sum: number, item: any) => sum + item.shots, 0);
+
+      // Calculate average growth
+      const validGrowthValues = sortedData.filter((item: any) => item.growth > 0);
+      const averageGrowth = validGrowthValues.length > 0
+        ? validGrowthValues.reduce((sum: number, item: any) => sum + item.growth, 0) / validGrowthValues.length
+        : growth;
+
+      // Only update metrics data if values have actually changed
+      setMetricsData(prev => {
+        if (prev.totalShots !== totalShots ||
+            prev.thisMonth !== thisMonthCount ||
+            prev.averageGrowth !== averageGrowth) {
+          return {
+            totalShots,
+            thisMonth: thisMonthCount,
+            averageGrowth
+          };
+        }
+        return prev;
+      });
+
+      return sortedData;
+    }
+  };
+
+  const metrics = [
+    {
+      title: 'Total Shots',
+      value: metricsData.totalShots.toLocaleString(),
+      change: { value: 15.2, period: 'this quarter' },
+    },
+    {
+      title: 'This Month',
+      value: metricsData.thisMonth.toLocaleString(),
+      color: 'text-secondary',
+      change: { value: 14.9, period: 'vs last month' },
+    },
+    {
+      title: 'Average Growth',
+      value: `${metricsData.averageGrowth.toFixed(1)}%`,
+      color: 'text-accent',
+    },
+  ];
+
   return (
     <BarChartWrapper
       title="Total Shots Analytics"
@@ -51,7 +108,6 @@ export default function TotalShots() {
       dataKey="shots"
       categoryKey="month"
       apiConfig={apiConfig}
-      initialData={fallbackData}
       metrics={metrics}
       enableRealTime={true}
       interactive={true}
@@ -73,11 +129,6 @@ export default function TotalShots() {
       }}
       onDataUpdate={(data) => {
         console.log('Shots data updated:', data);
-        // Could trigger notifications for significant changes
-        const latestMonth = data[data.length - 1];
-        if (latestMonth && typeof latestMonth.shots === 'number' && latestMonth.shots > 30000) {
-          console.log('🎉 Monthly shot goal exceeded!');
-        }
       }}
     />
   );

@@ -1,34 +1,46 @@
 import { MetricCard } from "@/components/charts/MetricCard";
+import { useEffect, useState } from "react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
-const distanceData = [
-  { club: 'Driver', distance: 285 },
-  { club: '3-Wood', distance: 245 },
-  { club: '5-Iron', distance: 175 },
-  { club: '7-Iron', distance: 155 },
-  { club: '9-Iron', distance: 125 },
-  { club: 'Pitching Wedge', distance: 105 },
-];
-
-const speedData = [
-  { club: 'Driver', speed: 165 },
-  { club: '3-Wood', speed: 155 },
-  { club: '5-Iron', speed: 125 },
-  { club: '7-Iron', speed: 115 },
-  { club: '9-Iron', speed: 95 },
-  { club: 'Pitching Wedge', speed: 85 },
-];
-
-const spinData = [
-  { club: 'Driver', spin: 2450 },
-  { club: '3-Wood', spin: 3200 },
-  { club: '5-Iron', spin: 4800 },
-  { club: '7-Iron', spin: 6200 },
-  { club: '9-Iron', spin: 7800 },
-  { club: 'Pitching Wedge', spin: 9200 },
-];
 
 export default function ClubPerformance() {
+  const [data, setData] = useState<Array<{
+    club: string;
+    distance: number;
+    speed: number;
+    spin: number;
+  }>>([]);
+    const [loading, setLoading] = useState(true);
+  
+    useEffect(() => {
+      const fetchData = async () => {
+        setLoading(true);
+        try {
+          const token = localStorage.getItem('golf_auth_token');
+          const res = await fetch('/api/shots/club_performance', {
+            headers: {
+              'Authorization': token ? `Bearer ${token}` : '',
+              'Content-Type': 'application/json',
+            },
+          });
+          if (!res.ok) throw new Error('Failed to fetch metrics');
+          const json = await res.json();
+          const formatted = Array.isArray(json)
+    ? json.map(item => ({
+        club: item.club,
+        distance: Number(item.distance),
+        speed: Number(item.speed),
+        spin: Number(item.spin)
+      })): [];
+          setData(formatted);
+        } catch (err) {
+          // Optionally handle error
+        } finally {
+          setLoading(false);
+        }
+      };
+      fetchData();
+    }, []);
   return (
     <div className="space-y-6 animate-fade-in-up">
       <div className="flex flex-col gap-2">
@@ -43,7 +55,7 @@ export default function ClubPerformance() {
           className="min-h-[350px]"
         >
           <ResponsiveContainer width="100%" height={250}>
-            <BarChart data={distanceData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+            <BarChart data={data} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
               <XAxis dataKey="club" stroke="hsl(var(--muted-foreground))" angle={-45} textAnchor="end" height={80} />
               <YAxis stroke="hsl(var(--muted-foreground))" />
@@ -65,7 +77,7 @@ export default function ClubPerformance() {
           className="min-h-[350px]"
         >
           <ResponsiveContainer width="100%" height={250}>
-            <BarChart data={speedData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+            <BarChart data={data} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
               <XAxis dataKey="club" stroke="hsl(var(--muted-foreground))" angle={-45} textAnchor="end" height={80} />
               <YAxis stroke="hsl(var(--muted-foreground))" />
@@ -87,7 +99,7 @@ export default function ClubPerformance() {
           className="min-h-[350px]"
         >
           <ResponsiveContainer width="100%" height={250}>
-            <BarChart data={spinData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+            <BarChart data={data} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
               <XAxis dataKey="club" stroke="hsl(var(--muted-foreground))" angle={-45} textAnchor="end" height={80} />
               <YAxis stroke="hsl(var(--muted-foreground))" />

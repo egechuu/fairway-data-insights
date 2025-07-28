@@ -1,6 +1,6 @@
+import { useState, useCallback } from 'react';
 import { ChartWrapper } from '@/components/charts/ChartWrapper';
 
-// Complex chart configuration for composed chart
 const chartConfig = {
   type: 'composed' as const,
   dataKey: 'sessions',
@@ -15,61 +15,77 @@ const chartConfig = {
   tooltipProps: {
     formatter: (value: any, name: string) => {
       if (name === 'sessions') return [`${value} sessions`, 'Session Count'];
-      if (name === 'avgDuration') return [`${value} min`, 'Avg Duration'];
+      if (name === 'averageDuration') return [`${value} min`, 'Average Duration'];
       return [value, name];
     },
   },
+  series: [
+    { type: 'bar', dataKey: 'sessions', name: 'Session Count', color: 'hsl(var(--secondary))' },
+    { type: 'line', dataKey: 'averageDuration', name: 'Average Duration', color: 'hsl(var(--accent))' },
+  ],
 };
 
-// API configuration with WebSocket for real-time updates
+const token = localStorage.getItem('golf_auth_token');
 const apiConfig = {
-  endpoint: '/api/analytics/sessions/weekly',
+  endpoint: '/api/sessions/weekly_session',
   method: 'GET' as const,
-  refreshInterval: 15000, // 15 seconds for demo
+  refreshInterval: 0,
+  headers: {
+    'Authorization': token ? `Bearer ${token}` : '',
+    'Content-Type': 'application/json',
+  },
   transformData: (data: any[]) => data.map(item => ({
-    week: `Week ${item.week_number}`,
-    sessions: item.session_count,
-    avgDuration: Math.round(item.average_duration / 60), // Convert to minutes
-    secondary: Math.round(item.average_duration / 60), // For the line chart
+    week: item.week,
+    sessions: item.sessions,
+    averageDuration: item.avgDuration,
+    secondary: item.avgDuration,
   })),
 };
 
-const fallbackData = [
-  { week: 'Week 1', sessions: 315, avgDuration: 31, secondary: 31 },
-  { week: 'Week 2', sessions: 428, avgDuration: 29, secondary: 29 },
-  { week: 'Week 3', sessions: 392, avgDuration: 33, secondary: 33 },
-  { week: 'Week 4', sessions: 476, avgDuration: 28, secondary: 28 },
-  { week: 'Week 5', sessions: 521, avgDuration: 35, secondary: 35 },
-  { week: 'Week 6', sessions: 445, avgDuration: 32, secondary: 32 },
-];
-
-const metrics = [
-  {
-    title: 'Total Sessions',
-    value: '2,577',
-    change: { value: 12.4, period: 'vs last 6 weeks' },
-  },
-  {
-    title: 'Peak Week',
-    value: 'Week 5 (521)',
-    color: 'text-secondary',
-  },
-  {
-    title: 'Avg Duration',
-    value: '31.3 min',
-    color: 'text-accent',
-    change: { value: 2.8, period: 'improvement' },
-  },
-];
-
 export default function WeeklySession() {
+  const [metrics, setMetrics] = useState([
+    { title: 'Total Sessions', value: '-'},
+    { title: 'Peak Week', value: '-', color: 'text-secondary' },
+    { title: 'Avg Duration', value: '-', color: 'text-accent'},
+  ]);
+
+
+  const handleDataUpdate = useCallback((data: any[]) => {
+    console.log('Weekly session data updated:', data);
+    if (!data || data.length === 0) return;
+
+    const totalSessions = data.reduce((sum, item) => sum + (Number(item.sessions) || 0), 0);
+    const avgDuration = (
+      data.reduce((sum, item) => sum + (Number(item.averageDuration) || 0), 0) / data.length
+    ).toFixed(1);
+    const peakWeek = data.reduce((prev, curr) =>
+      (curr.sessions || 0) > (prev.sessions || 0) ? curr : prev
+    );
+
+    setMetrics([
+      {
+        title: 'Total Sessions',
+        value: totalSessions.toLocaleString()
+      },
+      {
+        title: 'Peak Week',
+        value: `${peakWeek.week} (${peakWeek.sessions})`,
+        color: 'text-secondary',
+      },
+      {
+        title: 'Avg Duration',
+        value: `${avgDuration} min`,
+        color: 'text-accent'
+      },
+    ]);
+  }, []); 
+
   return (
     <ChartWrapper
       title="Weekly Session Analytics"
       description="Weekly session count and average duration trends"
       chartConfig={chartConfig}
       apiConfig={apiConfig}
-      initialData={fallbackData}
       metrics={metrics}
       enableRealTime={true}
       interactive={true}
@@ -89,27 +105,7 @@ export default function WeeklySession() {
         description: 'No session data found for the selected time period.',
         actionText: 'View Historical Data',
       }}
-      onDataUpdate={(data) => {
-        console.log('Weekly session data updated:', data);
-        
-        // Example: Real-time alert for unusual patterns
-        const latestWeek = data[data.length - 1];
-        if (latestWeek && typeof latestWeek.sessions === 'number' && latestWeek.sessions > 500) {
-          console.log('🚀 High session volume detected!');
-        }
-        
-        // Example: Calculate trends
-        if (data.length >= 2 && latestWeek) {
-          const previousWeek = data[data.length - 2];
-          const currentSessions = typeof latestWeek.sessions === 'number' ? latestWeek.sessions : 0;
-          const previousSessions = typeof previousWeek.sessions === 'number' ? previousWeek.sessions : 0;
-          
-          if (previousSessions > 0) {
-            const trend = ((currentSessions - previousSessions) / previousSessions) * 100;
-            console.log(`Session trend: ${trend.toFixed(1)}%`);
-          }
-        }
-      }}
+      onDataUpdate={handleDataUpdate}
     />
   );
 }

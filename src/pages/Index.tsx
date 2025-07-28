@@ -5,9 +5,10 @@ import { useAuth } from '@/hooks/useAuth';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Trophy, BarChart3, Users, Target, ArrowRight } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 const Index = () => {
+  const navigate = useNavigate();
   const { isAuthenticated, isLoading, login, logout } = useAuth();
   const [loginLoading, setLoginLoading] = useState(false);
 
@@ -15,6 +16,9 @@ const Index = () => {
     setLoginLoading(true);
     const result = await login(data.email, data.password, data.rememberMe);
     setLoginLoading(false);
+      if (result.success) {
+      navigate('/');
+    }
     return result;
   };
 
@@ -43,7 +47,7 @@ const Index = () => {
             <div>
               <h1 className="text-4xl font-bold text-foreground">Welcome to GolfPro Analytics</h1>
               <p className="text-xl text-muted-foreground mt-2">
-                Elevate your golf game with comprehensive data insights
+                Elevate your golf app with comprehensive data insights
               </p>
             </div>
           </div>

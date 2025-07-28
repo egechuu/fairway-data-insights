@@ -1,46 +1,83 @@
 import { MetricCard } from "@/components/charts/MetricCard";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts';
+import { useEffect, useState } from "react";
 
-const data = [
-  { subscription: 'Premium', frequency: 4.2 },
-  { subscription: 'Basic', frequency: 2.8 },
-  { subscription: 'Trial', frequency: 1.5 },
-  { subscription: 'Free', frequency: 1.1 },
-];
+const COLORS = ['#22c55e', '#16a34a', '#4ade80', '#bbf7d0'];
 
 export default function AvgSessionFrequency() {
-  return (
-    <div className="space-y-6 animate-fade-in-up">
-      <div className="flex flex-col gap-2">
-        <h1 className="text-2xl font-bold text-foreground">Average Session Frequency</h1>
-        <p className="text-muted-foreground">Comparing session frequency across subscription types</p>
-      </div>
+	const [data, setData] = useState<Array<{ subscription: string; frequency: number }>>([]);
+	const [loading, setLoading] = useState(true);
 
-      <MetricCard
-        title="Session Frequency by Subscription"
-        description="Average sessions per week by subscription type"
-        className="min-h-[400px]"
-      >
-        <ResponsiveContainer width="100%" height={300}>
-          <BarChart
-            data={data}
-            layout="horizontal"
-            margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
-          >
-            <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-            <XAxis type="number" stroke="hsl(var(--muted-foreground))" />
-            <YAxis dataKey="subscription" type="category" stroke="hsl(var(--muted-foreground))" />
-            <Tooltip 
-              contentStyle={{ 
-                backgroundColor: 'hsl(var(--card))', 
-                border: '1px solid hsl(var(--border))',
-                borderRadius: '8px'
-              }} 
-            />
-            <Bar dataKey="frequency" fill="hsl(var(--primary))" radius={4} />
-          </BarChart>
-        </ResponsiveContainer>
-      </MetricCard>
-    </div>
-  );
+	useEffect(() => {
+		const fetchData = async () => {
+			setLoading(true);
+			try {
+				const token = localStorage.getItem('golf_auth_token');
+				const res = await fetch('/api/sessions/avg_session_frequency', {
+					headers: {
+						'Authorization': token ? `Bearer ${token}` : '',
+						'Content-Type': 'application/json',
+					},
+				});
+				if (!res.ok) throw new Error('Failed to fetch metrics');
+				const json = await res.json();
+				const formatted = Array.isArray(json)
+  ? json.map(item => ({
+      subscription: item.subscription,
+      frequency: Number(item.frequency)
+    }))
+  : [];
+				setData(formatted);
+			} catch (err) {
+				// Optionally handle error
+			} finally {
+				setLoading(false);
+			}
+		};
+		fetchData();
+	}, []);
+
+	return (
+		<div className="space-y-6 animate-fade-in-up">
+			<div className="flex flex-col gap-2">
+				<h1 className="text-2xl font-bold text-foreground">Average Session Frequency</h1>
+				<p className="text-muted-foreground">Comparing session frequency across subscription status</p>
+			</div>  
+
+			<MetricCard
+				title="Session Frequency by Subscription"
+				description="Average sessions per week by subscription status"
+				className="min-h-[400px]"
+			>
+				{loading ? (
+					<div className="flex items-center justify-center h-[300px] text-muted-foreground">Loading...</div>
+				) : (
+					<ResponsiveContainer width="100%" height={300}>
+						<PieChart>
+							<Pie
+								data={data}
+								dataKey="frequency"
+								nameKey="subscription"
+								cx="50%"
+								cy="50%"
+								outerRadius={100}
+								label={({ subscription }) => subscription}
+							>
+								{data.map((entry, index) => (
+									<Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+								))}
+							</Pie>
+							<Tooltip
+								contentStyle={{
+									backgroundColor: 'hsl(var(--card))',
+									border: '1px solid hsl(var(--border))',
+									borderRadius: '8px'
+								}}
+							/>
+						</PieChart>
+					</ResponsiveContainer>
+				)}
+			</MetricCard>
+		</div>
+	);
 }

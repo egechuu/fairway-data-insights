@@ -1,9 +1,48 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Clock, Users, TrendingUp } from 'lucide-react';
 import { MetricCard } from '@/components/charts/MetricCard';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 export const AvgSessionDuration = () => {
+  const [metrics, setMetrics] = useState({
+    overall: { value: '', change: 0 },
+    premium: { value: '', change: 0 },
+    free: { value: '', change: 0 },
+    weekend: { value: '', change: 0 },
+  });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchMetrics = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        // Get JWT token from localStorage
+        const token = localStorage.getItem('golf_auth_token'); 
+        const res = await fetch('/api/sessions/avg_session_duration', {
+          headers: {
+            'Authorization': token ? `Bearer ${token}` : '',
+            'Content-Type': 'application/json',
+          },
+        });
+        if (!res.ok) throw new Error('Failed to fetch metrics');
+        const data = await res.json();
+        setMetrics({
+          overall: data.overall,
+          premium: data.premium,
+          free: data.free,
+          weekend: data.weekend,
+        });
+      } catch (err: any) {
+        setError(err.message || 'Error fetching data');
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchMetrics();
+  }, []);
+
   return (
     <div className="space-y-6 animate-fade-in-up">
       {/* Page Header */}
@@ -21,8 +60,8 @@ export const AvgSessionDuration = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <MetricCard
           title="Overall Average"
-          value="32.5 min"
-          change={{ value: 12.5, period: 'vs last month' }}
+          value={loading ? '...' : metrics.overall.value}
+          change={{ value: metrics.overall.change, period: 'vs last month' }}
           icon={Clock}
           variant="premium"
           description="All users"
@@ -30,8 +69,8 @@ export const AvgSessionDuration = () => {
         
         <MetricCard
           title="Premium Users"
-          value="45.2 min"
-          change={{ value: 8.3, period: 'vs last month' }}
+          value={loading ? '...' : metrics.premium.value}
+          change={{ value: metrics.premium.change, period: 'vs last month' }}
           icon={TrendingUp}
           variant="success"
           description="Subscription active"
@@ -39,16 +78,16 @@ export const AvgSessionDuration = () => {
         
         <MetricCard
           title="Free Users"
-          value="23.1 min"
-          change={{ value: 15.7, period: 'vs last month' }}
+          value={loading ? '...' : metrics.free.value}
+          change={{ value: metrics.free.change, period: 'vs last month' }}
           icon={Users}
           description="Free tier"
         />
         
         <MetricCard
           title="Weekend Sessions"
-          value="38.7 min"
-          change={{ value: 5.2, period: 'vs weekdays' }}
+          value={loading ? '...' : metrics.weekend.value}
+          change={{ value: metrics.weekend.change, period: 'vs weekdays' }}
           icon={Clock}
           description="Sat-Sun average"
         />

@@ -17,9 +17,17 @@ interface DashboardHeaderProps {
   onLogout: () => void;
 }
 
+function generateAvatarName(name: string): string {
+  if (!name) return 'U'; // Default fallback if name is empty
+  const parts = name.split(' ');
+  if (parts.length === 1) return parts[0].charAt(0).toUpperCase();
+  return parts[0].charAt(0).toUpperCase() + parts[1].charAt(0).toUpperCase();
+}
+
+
 export const DashboardHeader: React.FC<DashboardHeaderProps> = ({ onLogout }) => {
   const { theme, setTheme } = useTheme();
-
+  const user = localStorage.getItem('golf_user_data') ? JSON.parse(localStorage.getItem('golf_user_data')) : null ;
   return (
     <header className="h-16 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
       <div className="flex items-center justify-between h-full px-6">
@@ -29,7 +37,7 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({ onLogout }) =>
           <div className="hidden md:block">
             <h2 className="text-xl font-semibold text-foreground">Dashboard</h2>
             <p className="text-sm text-muted-foreground">
-              Welcome back, let's analyze your golf performance
+              Welcome back, let's analyze your golf data!
             </p>
           </div>
         </div>
@@ -58,7 +66,7 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({ onLogout }) =>
                 <Badge 
                   className="absolute -top-1 -right-1 h-5 w-5 rounded-full p-0 text-xs bg-accent text-accent-foreground"
                 >
-                  3
+                   3
                 </Badge>
               </Button>
             </DropdownMenuTrigger>
@@ -90,7 +98,7 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({ onLogout }) =>
                 <Avatar className="h-8 w-8">
                   <AvatarImage src="/avatars/01.png" alt="User" />
                   <AvatarFallback className="bg-primary text-primary-foreground">
-                    JP
+                    {user ? generateAvatarName(user.name) : 'U'}
                   </AvatarFallback>
                 </Avatar>
               </Button>
@@ -98,9 +106,9 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({ onLogout }) =>
             <DropdownMenuContent className="w-56" align="end" forceMount>
               <div className="flex items-center justify-start gap-2 p-2">
                 <div className="flex flex-col space-y-1 leading-none">
-                  <p className="font-medium">John Pro</p>
+                  <p className="font-medium"> {user ? user.name : ''} </p>
                   <p className="w-[200px] truncate text-sm text-muted-foreground">
-                    john.pro@golfanalytics.com
+                    {user ? user.email : ''}
                   </p>
                 </div>
               </div>

@@ -1,62 +1,135 @@
-import { MetricCard } from "@/components/charts/MetricCard";
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
+import { PieChartWrapper } from '@/components/charts/ChartWrapper';
+import { chartApiService } from '@/services/chartApi';
+import { parse } from 'path';
+import { useState, useCallback, useRef } from 'react';
 
-const data = [
-  { name: 'Retained Subscribers', value: 84, percentage: '84%' },
-  { name: 'Dropped Off', value: 16, percentage: '16%' },
-];
+export default function DropOffRateAll() {
+  const [metricsData, setMetricsData] = useState({
+    total_user_count: 0,
+    drop_off_count: 0,
+    returned_count: 0,
+    drop_off_rate: 0
+  });
 
-const COLORS = ['hsl(var(--golf-gold))', 'hsl(var(--destructive))'];
+  const token = localStorage.getItem('golf_auth_token');
+  const lastDataRef = useRef<string>('');
 
-export default function DropOffRateSub() {
+  const transformData = useCallback((data: any) => {
+    const total_user_count = parseInt(data.total_user_count || '0');
+    const drop_off_count = parseFloat(data.drop_off_count || '0');
+    const returned_count = parseInt(data.returned_count || '0');
+    const drop_off_rate = parseFloat(data.drop_off_rate || '0');
+    
+    // Return data formatted for the pie chart (no state updates here)
+    return [
+      {
+        name: 'Dropped Off',
+        value: drop_off_count,
+        percentage: drop_off_rate,
+        total_user_count,
+        returned_count
+      },
+      {
+        name: 'Returned',
+        value: returned_count,
+        percentage: 100 - drop_off_rate,
+        total_user_count,
+        drop_off_count
+      }
+    ];
+  }, []);
+
+  const apiConfig = {
+    endpoint: '/api/users/drop_off_rate_sub',
+    method: 'GET' as const,
+    refreshInterval: 0,
+    headers: {
+      'Authorization': token ? `Bearer ${token}` : '',
+      'Content-Type': 'application/json',
+    },
+    transformData
+  };
+
+  // Fallback data for when API fails or is loading
+  const fallbackData = [
+    { name: 'Dropped Off', value: 0, percentage: 0 },
+    { name: 'Returned', value: 0, percentage: 0 }
+  ];
+
+  // Metrics to display alongside the chart
+  const metrics = [
+    {
+      title: 'Total Users',
+      value: metricsData.total_user_count,
+      color: '#3b82f6'
+    },
+    {
+      title: 'Drop-off Rate',
+      value: `${metricsData.drop_off_rate.toFixed(1)}%`,
+      color: '#ef4444'
+    },
+    {
+      title: 'Users Dropped Off',
+      value: metricsData.drop_off_count,
+      color: '#ef4444'
+    },
+    {
+      title: 'Users Returned',
+      value: metricsData.returned_count,
+      color: '#10b981'
+    }
+  ];
+
   return (
-    <div className="space-y-6 animate-fade-in-up">
-      <div className="flex flex-col gap-2">
-        <h1 className="text-2xl font-bold text-foreground">Subscriber Drop-off Rate</h1>
-        <p className="text-muted-foreground">Percentage of subscribed users who dropped off after their first session</p>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        <div className="card-golf p-4">
-          <div className="metric-label">Total Subscribers</div>
-          <div className="metric-large">4,287</div>
-        </div>
-        <div className="card-golf p-4">
-          <div className="metric-label">Retained</div>
-          <div className="metric-medium text-golf-gold">3,601 (84%)</div>
-        </div>
-        <div className="card-golf p-4">
-          <div className="metric-label">Dropped Off</div>
-          <div className="metric-medium text-destructive">686 (16%)</div>
-        </div>
-      </div>
-
-      <MetricCard
-        title="Subscriber Retention After First Session"
-        description="Distribution of subscribers who return vs those who drop off"
-        className="min-h-[400px]"
-      >
-        <ResponsiveContainer width="100%" height={300}>
-          <PieChart>
-            <Pie
-              data={data}
-              cx="50%"
-              cy="50%"
-              labelLine={false}
-              label={({ name, percentage }) => `${name}\n${percentage}`}
-              outerRadius={100}
-              fill="#8884d8"
-              dataKey="value"
-            >
-              {data.map((_, index) => (
-                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-              ))}
-            </Pie>
-            <Tooltip />
-            <Legend />
-          </PieChart>
-        </ResponsiveContainer>
-      </MetricCard>
-    </div>
+    <PieChartWrapper
+      title="User Drop-off Rate (All Users)"
+      description="Percentage of users who dropped off after their first session"
+      dataKey="value"
+      apiConfig={apiConfig}
+      initialData={fallbackData}
+      metrics={metrics}
+      enableRealTime={true}
+      interactive={true}
+      exportable={true}
+      loadingConfig={{
+        message: 'Loading user retention data...',
+        showSkeleton: true,
+        skeletonRows: 3,
+      }}
+      errorConfig={{
+        message: 'Failed to load retention data',
+        description: 'Unable to fetch user drop-off statistics. Please check your connection.',
+        showRetry: true,
+      }}
+      emptyConfig={{
+        message: 'No retention data available',
+        description: 'There is no user retention data to display for the selected period.',
+        actionText: 'Refresh Data',
+      }}
+      onDataUpdate={useCallback((data) => {
+        console.log('Drop-off data updated:', data);
+        
+        
+        // Update metrics state only once when data is received
+        if (data && data.length > 0 && data[0].total_user_count !== undefined) {
+          const firstDataPoint = data[0];
+          const secondDataPoint = data[1];
+          
+          const newMetricsData = {
+            total_user_count: parseInt(String(firstDataPoint.total_user_count || 0)),
+            drop_off_count: parseFloat(String(firstDataPoint.value || 0)),
+            returned_count: parseInt(String(secondDataPoint.value || 0)),
+            drop_off_rate: parseFloat(String(firstDataPoint.percentage || 0))
+          };
+          
+          // Only update if data has actually changed
+          const dataHash = JSON.stringify(newMetricsData);
+          if (dataHash !== lastDataRef.current) {
+            lastDataRef.current = dataHash;
+            setMetricsData(newMetricsData);
+          }
+        }
+      }, [])}
+    />
   );
 }

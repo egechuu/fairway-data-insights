@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 
-interface User {
+export interface User {
   id: string;
   email: string;
   name: string;
@@ -19,7 +19,7 @@ export const useAuth = () => {
     user: null,
     isLoading: true,
   });
-
+  
   useEffect(() => {
     // Check for existing session on mount
     const checkAuth = () => {
@@ -58,41 +58,53 @@ export const useAuth = () => {
 
   const login = async (email: string, password: string, rememberMe: boolean = false) => {
     setAuthState(prev => ({ ...prev, isLoading: true }));
-    
+    console.log('🧠 [useAuth.login] called with:', { email, password, rememberMe });
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Mock successful login
+      const response = await fetch('/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ useremail: email, password }),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Login failed:', errorText);
+        throw new Error(errorText);
+      }
+
+      const data = await response.json();
+      console.log('✅ Login response data:', data);
+
       const user: User = {
-        id: '1',
-        email,
-        name: 'John Pro',
-        avatar: '/avatars/01.png'
+        id: data.user?.id ?? 'unknown',
+        email: data.user?.email ?? email,
+        name: data.user?.name ?? 'Unknown User',
+        avatar: '/avatars/01.png',
       };
-      
-      const token = 'mock_jwt_token_' + Date.now();
-      
-      // Store auth data
-      localStorage.setItem('golf_auth_token', token);
+
+      localStorage.setItem('golf_auth_token', data.access_token);
       localStorage.setItem('golf_user_data', JSON.stringify(user));
-      
+
       setAuthState({
         isAuthenticated: true,
         user,
         isLoading: false,
       });
-      
+      console.log('✅ User state set:', user);
       return { success: true };
-    } catch (error) {
+    
+    } catch (error: any) {
+      console.error('❌ Login error:', error.message);
       setAuthState(prev => ({ ...prev, isLoading: false }));
-      return { success: false, error: 'Login failed' };
+      return { success: false, error: error.message };
     }
   };
+
 
   const logout = () => {
     localStorage.removeItem('golf_auth_token');
     localStorage.removeItem('golf_user_data');
+    sessionStorage.setItem('isAuthenticated', 'false');
     setAuthState({
       isAuthenticated: false,
       user: null,
