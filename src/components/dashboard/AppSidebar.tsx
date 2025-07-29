@@ -7,7 +7,6 @@ import {
   Users,
   ChevronDown,
   ChevronRight,
-  Trophy,
   Activity,
   Zap,
   TrendingUp,
@@ -149,7 +148,7 @@ export function AppSidebar() {
       <SidebarHeader className="border-b border-border p-6">
         {!collapsed && (
           <div className="flex items-center animate-fade-in-up">
-            <Trophy className="h-8 w-8 text-primary mr-3" />
+            <Target className="h-8 w-8 text-primary mr-3" />
             <div>
               <h1 className="text-xl font-bold text-primary">GolfPro</h1>
               <p className="text-xs text-muted-foreground">Analytics Dashboard</p>
@@ -158,7 +157,7 @@ export function AppSidebar() {
         )}
         {collapsed && (
           <div className="flex justify-center">
-            <Trophy className="h-8 w-8 text-primary" />
+            <Target className="h-8 w-8 text-primary" />
           </div>
         )}
       </SidebarHeader>
