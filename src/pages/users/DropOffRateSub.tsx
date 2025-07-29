@@ -3,7 +3,7 @@ import { chartApiService } from '@/services/chartApi';
 import { parse } from 'path';
 import { useState, useCallback, useRef } from 'react';
 
-export default function DropOffRateAll() {
+export default function DropOffRateSub() {
   const [metricsData, setMetricsData] = useState({
     total_user_count: 0,
     drop_off_count: 0,
@@ -82,7 +82,7 @@ export default function DropOffRateAll() {
 
   return (
     <PieChartWrapper
-      title="User Drop-off Rate (All Users)"
+      title="User Drop-off Rate (Subscribers)"
       description="Percentage of users who dropped off after their first session"
       dataKey="value"
       apiConfig={apiConfig}

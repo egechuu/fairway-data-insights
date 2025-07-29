@@ -53,7 +53,7 @@ const Index = () => {
           </div>
         </div>
 
-        {/* Quick Stats */}
+        {/* Quick Stats
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <Card className="card-golf-premium">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -93,7 +93,7 @@ const Index = () => {
               </p>
             </CardContent>
           </Card>
-        </div>
+        </div> */}
 
         {/* Navigation Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
